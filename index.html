@@ -1,209 +1,746 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Code Storm Platformer</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BuddhaOS Arcade // Code Storm Platformer</title>
 <style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: black;
-  }
-  canvas {
-    display: block;
-  }
+:root{
+  --green:#00ff66;
+  --green2:#7cff9b;
+  --white:#eafff1;
+  --gold:#f0c040;
+  --red:#ff4d6d;
+  --blue:#38bdf8;
+  --line:rgba(0,255,102,.35);
+  --shadow:0 0 22px rgba(0,255,102,.35),0 0 90px rgba(0,255,102,.14);
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+  color:var(--green);
+  font-family:Consolas,"Courier New",monospace;
+}
+canvas{
+  display:block;
+  width:100vw;
+  height:100vh;
+  image-rendering:auto;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:8;
+  pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 4px);
+  mix-blend-mode:screen;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:9;
+  pointer-events:none;
+  background:radial-gradient(circle at center,transparent 0 55%,rgba(0,0,0,.44) 100%);
+}
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:grid;
+  place-items:center;
+  background:rgba(0,0,0,.92);
+}
+.overlay.hidden{display:none}
+.boot-box,.panel{
+  width:min(820px,92vw);
+  border:1px solid var(--green);
+  box-shadow:var(--shadow);
+  background:rgba(0,0,0,.82);
+  padding:1.25rem;
+}
+.boot-title{
+  color:var(--white);
+  letter-spacing:.16em;
+  margin-bottom:1rem;
+}
+.boot-log{
+  min-height:220px;
+  white-space:pre-wrap;
+  line-height:1.55;
+}
+.progress{
+  height:8px;
+  border:1px solid var(--line);
+  margin-top:1rem;
+  overflow:hidden;
+}
+.progress span{
+  display:block;
+  height:100%;
+  width:0;
+  background:var(--green);
+  box-shadow:0 0 18px var(--green);
+}
+.hud{
+  position:fixed;
+  z-index:10;
+  top:0;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  padding:.65rem .8rem;
+  border-bottom:1px solid var(--line);
+  background:rgba(0,0,0,.62);
+  backdrop-filter:blur(6px);
+  text-shadow:0 0 10px var(--green);
+  font-size:.78rem;
+}
+.hud strong{color:var(--white)}
+.hud .gold{color:var(--gold)}
+.hud .red{color:var(--red)}
+.status{
+  position:fixed;
+  left:.8rem;
+  bottom:.8rem;
+  z-index:10;
+  max-width:min(560px,92vw);
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.62);
+  padding:.65rem;
+  font-size:.72rem;
+  line-height:1.45;
+  color:var(--green2);
+}
+.panel h1{
+  color:var(--green2);
+  font-size:clamp(2.1rem,7vw,5rem);
+  margin:0 0 .5rem;
+  text-shadow:0 0 22px var(--green);
+}
+.panel p{color:var(--white);line-height:1.6}
+.btn{
+  border:1px solid var(--green);
+  background:#000;
+  color:var(--green);
+  padding:.7rem 1rem;
+  font:inherit;
+  cursor:pointer;
+}
+.btn:hover,.btn:focus{
+  background:var(--green);
+  color:#001b0b;
+  outline:none;
+}
+kbd{
+  border:1px solid var(--line);
+  padding:.08rem .3rem;
+  color:var(--white);
+}
 </style>
 </head>
 <body>
 
 <canvas id="game"></canvas>
 
+<div class="hud" id="hud">
+  <div><strong>BuddhaOS Arcade</strong> // CODE STORM PLATFORMER</div>
+  <div>
+    SCORE: <span id="score">0</span> |
+    LIVES: <span id="lives">3</span> |
+    MODULES: <span id="modules">0</span> |
+    SIGNAL: <span id="signal" class="gold">STABLE</span>
+  </div>
+</div>
+
+<div class="status" id="status">
+  CONTROLS: <kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd> move · <kbd>W</kbd>/<kbd>SPACE</kbd> jump · <kbd>P</kbd> pause · <kbd>R</kbd> restart
+</div>
+
+<div class="overlay" id="boot">
+  <div class="boot-box">
+    <div class="boot-title">BUDDHAOS BIOS // ARCADE MODULE</div>
+    <div class="boot-log" id="bootLog"></div>
+    <div class="progress"><span id="bar"></span></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="menu">
+  <div class="panel">
+    <h1>Code Storm</h1>
+    <p>
+      A BuddhaOS arcade module. Climb falling code chunks, collect glowing system modules,
+      avoid ERROR fragments, and survive the Matrix rain.
+    </p>
+    <p>
+      Controls: <kbd>A</kbd>/<kbd>D</kbd> move, <kbd>W</kbd>/<kbd>SPACE</kbd> jump,
+      <kbd>P</kbd> pause, <kbd>R</kbd> restart.
+    </p>
+    <button class="btn" id="startBtn">ENTER STORM</button>
+  </div>
+</div>
+
 <script>
-// =========================
-// CANVAS SETUP
-// =========================
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+(() => {
+  "use strict";
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+  // =========================
+  // CANVAS SETUP
+  // =========================
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d", { alpha:false });
 
-window.addEventListener("resize", () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
-
-// =========================
-// MATRIX BACKGROUND
-// =========================
-const matrixLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>[]{};=+-*/";
-const fontSize = 16;
-let columns = Math.floor(canvas.width / fontSize);
-let drops = Array(columns).fill(1);
-
-function drawMatrixBackground() {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = "#00FF00";
-  ctx.font = fontSize + "px monospace";
-
-  for (let i = 0; i < drops.length; i++) {
-    const char = matrixLetters.charAt(Math.floor(Math.random() * matrixLetters.length));
-    ctx.fillText(char, i * fontSize, drops[i] * fontSize);
-
-    if (drops[i] * fontSize > canvas.height) drops[i] = 0;
-    drops[i]++;
-  }
-}
-
-// =========================
-// PLAYER
-// =========================
-let player = {
-  x: canvas.width / 2,
-  y: canvas.height - 150,
-  w: 30,
-  h: 30,
-  vy: 0,
-  onGround: false
-};
-
-let keys = {};
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
-
-// =========================
-// RANDOM CODE CHUNKS
-// =========================
-const codeLines = [
-  "function hack(){",
-  "let x = 42;",
-  "console.log('run')",
-  "if(user){access();}",
-  "while(true){break;}",
-  "try{}catch(e){}",
-  "return null;",
-  "class Matrix{}",
-  "for(i=0;i<9;i++){}",
-  "const data = [];"
-];
-
-function generateChunk() {
-  let lines = [];
-  let height = 4 + Math.floor(Math.random() * 8);
-
-  for (let i = 0; i < height; i++) {
-    let indent = Math.floor(Math.random() * 12);
-    lines.push(" ".repeat(indent) + codeLines[Math.floor(Math.random() * codeLines.length)]);
-  }
-
-  return {
-    text: lines,
-    x: Math.random() * (canvas.width - 300),
-    y: -200 - Math.random() * 600,
-    speed: 1.5 + Math.random() * 2,
-    w: 300,
-    h: lines.length * 20
+  const ui = {
+    score: document.getElementById("score"),
+    lives: document.getElementById("lives"),
+    modules: document.getElementById("modules"),
+    signal: document.getElementById("signal"),
+    status: document.getElementById("status"),
+    boot: document.getElementById("boot"),
+    bootLog: document.getElementById("bootLog"),
+    bar: document.getElementById("bar"),
+    menu: document.getElementById("menu"),
+    startBtn: document.getElementById("startBtn")
   };
-}
 
-// Create many chunks
-let chunks = [];
-for (let i = 0; i < 15; i++) chunks.push(generateChunk());
+  const state = {
+    running:false,
+    paused:false,
+    gameOver:false,
+    booted:false,
+    score:0,
+    lives:3,
+    modules:0,
+    time:0,
+    shake:0,
+    message:"BuddhaOS arcade driver attached.",
+    lastFrame:performance.now()
+  };
 
-// =========================
-// UPDATE LOGIC
-// =========================
-function update() {
-  // Gravity
-  player.vy += 0.5;
-  player.y += player.vy;
-  player.onGround = false;
+  const world = {
+    gravity:0.75,
+    friction:0.82,
+    speedScale:1,
+    floor:0
+  };
 
-  // Movement
-  if (keys["ArrowLeft"] || keys["a"]) player.x -= 5;
-  if (keys["ArrowRight"] || keys["d"]) player.x += 5;
-
-  // Jump
-  if ((keys["ArrowUp"] || keys["w"] || keys[" "]) && player.onGround) {
-    player.vy = -12;
-    player.onGround = false;
+  function resize(){
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    world.floor = canvas.height - 52;
+    matrix.resize();
+    keepPlayerInBounds();
   }
+  addEventListener("resize", resize);
 
-  // Keep player on screen
-  if (player.x < 0) player.x = 0;
-  if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
+  // =========================
+  // INPUT
+  // =========================
+  const keys = Object.create(null);
+  addEventListener("keydown", e => {
+    const k = e.key.toLowerCase();
+    keys[k] = true;
 
-  // Respawn if falling
-  if (player.y > canvas.height) {
+    if(k === "p"){
+      togglePause();
+    }
+
+    if(k === "r"){
+      restart();
+    }
+
+    if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k)){
+      e.preventDefault();
+    }
+  });
+
+  addEventListener("keyup", e => {
+    keys[e.key.toLowerCase()] = false;
+  });
+
+  // =========================
+  // MATRIX BACKGROUND
+  // =========================
+  const matrix = {
+    letters:"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>[]{};=+-*/$@QWRD佛OSERROR",
+    fontSize:16,
+    cols:0,
+    drops:[],
+    resize(){
+      this.cols = Math.ceil(canvas.width / this.fontSize);
+      this.drops = Array.from({ length:this.cols }, () => Math.random() * canvas.height / this.fontSize);
+    },
+    draw(){
+      ctx.fillStyle = "rgba(0,0,0,0.11)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      ctx.fillStyle = state.paused ? "#315f41" : "#00ff66";
+      ctx.font = this.fontSize + "px Consolas, monospace";
+
+      for(let i=0;i<this.cols;i++){
+        const char = this.letters[(Math.random()*this.letters.length)|0];
+        ctx.fillText(char, i*this.fontSize, this.drops[i]*this.fontSize);
+
+        if(this.drops[i]*this.fontSize > canvas.height && Math.random() > 0.975){
+          this.drops[i] = 0;
+        }
+        this.drops[i]++;
+      }
+    }
+  };
+
+  // =========================
+  // PLAYER
+  // =========================
+  const player = {
+    x:0,y:0,w:30,h:34,
+    vx:0,vy:0,
+    onGround:false,
+    coyote:0,
+    jumpBuffer:0,
+    invuln:0
+  };
+
+  function resetPlayer(){
+    player.x = canvas.width * 0.5;
     player.y = canvas.height - 150;
+    player.vx = 0;
     player.vy = 0;
+    player.onGround = false;
+    player.coyote = 0;
+    player.jumpBuffer = 0;
+    player.invuln = 80;
   }
 
-  // Update chunks
-  chunks.forEach(chunk => {
-    chunk.y += chunk.speed;
+  function keepPlayerInBounds(){
+    player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
+  }
 
-    // Respawn chunk at top
-    if (chunk.y > canvas.height + 200) {
-      let newChunk = generateChunk();
-      chunk.text = newChunk.text;
-      chunk.x = newChunk.x;
-      chunk.y = newChunk.y;
-      chunk.speed = newChunk.speed;
-      chunk.h = newChunk.h;
+  // =========================
+  // CODE CHUNKS / HAZARDS / MODULES
+  // =========================
+  const codeLines = [
+    "function awaken(){",
+    "let signal = 432;",
+    "console.log('suchness')",
+    "if(user){access();}",
+    "while(true){break;}",
+    "try{}catch(e){}",
+    "return null;",
+    "class Matrix{}",
+    "for(i=0;i<9;i++){}",
+    "const data = [];",
+    "QWARD.protocol.online();",
+    "PROJECTMANHATTAN.handshake();",
+    "BuddhaOS.kernel.tick();",
+    "archive.mount('/worlds');",
+    "whale.ai.listen();"
+  ];
+
+  const chunks = [];
+  const hazards = [];
+  const pickups = [];
+
+  function rand(min,max){ return min + Math.random() * (max-min); }
+  function choice(arr){ return arr[(Math.random()*arr.length)|0]; }
+
+  function generateChunk(y = -200 - Math.random()*600){
+    const lines = [];
+    const height = 3 + Math.floor(Math.random()*7);
+    for(let i=0;i<height;i++){
+      lines.push(" ".repeat((Math.random()*8)|0) + choice(codeLines));
     }
+    const w = Math.min(360, Math.max(220, rand(210, 340)));
+    return {
+      text:lines,
+      x:rand(20, Math.max(40, canvas.width - w - 20)),
+      y,
+      speed:rand(1.1,2.7) * world.speedScale,
+      w,
+      h:lines.length*20 + 10,
+      stable:Math.random() > 0.14
+    };
+  }
 
-    // Collision detection
-    if (
-      player.x < chunk.x + chunk.w &&
-      player.x + player.w > chunk.x &&
-      player.y + player.h < chunk.y + chunk.h &&
-      player.y + player.h > chunk.y &&
-      player.vy > 0
-    ) {
-      player.onGround = true;
-      player.vy = 0;
-      player.y = chunk.y - player.h;
-    }
-  });
-}
+  function generateHazard(y = -300 - Math.random()*900){
+    return {
+      x:rand(20, canvas.width-70),
+      y,
+      w:58,
+      h:24,
+      speed:rand(2.2,4.3) * world.speedScale,
+      text:"ERROR"
+    };
+  }
 
-// =========================
-// DRAW EVERYTHING
-// =========================
-function draw() {
-  drawMatrixBackground();
+  function generatePickup(y = -400 - Math.random()*900){
+    return {
+      x:rand(30, canvas.width-40),
+      y,
+      r:9,
+      speed:rand(1.5,3.2) * world.speedScale,
+      text:"{}",
+      taken:false
+    };
+  }
 
-  // Draw chunks
-  ctx.fillStyle = "white";
-  ctx.font = "18px Courier New";
+  function resetEntities(){
+    chunks.length = 0;
+    hazards.length = 0;
+    pickups.length = 0;
 
-  chunks.forEach(chunk => {
-    let yOffset = chunk.y;
-    chunk.text.forEach(line => {
-      ctx.fillText(line, chunk.x + 10, yOffset);
-      yOffset += 20;
+    chunks.push({
+      text:["BuddhaOS.start();","press SPACE to jump;"],
+      x:Math.max(20, canvas.width/2 - 170),
+      y:canvas.height - 90,
+      speed:0,
+      w:340,
+      h:48,
+      stable:true,
+      base:true
     });
-  });
 
-  // Draw player
-  ctx.fillStyle = "#00FF00";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
-}
+    const count = Math.max(11, Math.floor(canvas.width/115));
+    for(let i=0;i<count;i++) chunks.push(generateChunk(-i*110));
+    for(let i=0;i<6;i++) hazards.push(generateHazard(-i*220));
+    for(let i=0;i<7;i++) pickups.push(generatePickup(-i*190));
+  }
 
-// =========================
-// MAIN LOOP
-// =========================
-function loop() {
-  update();
-  draw();
+  // =========================
+  // COLLISION HELPERS
+  // =========================
+  function rectsOverlap(a,b){
+    return a.x < b.x+b.w &&
+           a.x+a.w > b.x &&
+           a.y < b.y+b.h &&
+           a.y+a.h > b.y;
+  }
+
+  function circleRectOverlap(c,r){
+    const cx = Math.max(r.x, Math.min(c.x, r.x+r.w));
+    const cy = Math.max(r.y, Math.min(c.y, r.y+r.h));
+    const dx = c.x - cx;
+    const dy = c.y - cy;
+    return dx*dx + dy*dy < c.r*c.r;
+  }
+
+  // =========================
+  // GAME LOGIC
+  // =========================
+  function update(dt){
+    if(!state.running || state.paused || state.gameOver) return;
+
+    state.time += dt;
+    state.score += dt * 0.014;
+    world.speedScale = 1 + Math.min(1.3, state.score/900);
+
+    if(player.invuln > 0) player.invuln -= dt;
+
+    const left = keys["arrowleft"] || keys["a"];
+    const right = keys["arrowright"] || keys["d"];
+    const jump = keys["arrowup"] || keys["w"] || keys[" "];
+
+    const accel = 0.75;
+    const maxSpeed = 6.4;
+
+    if(left) player.vx -= accel;
+    if(right) player.vx += accel;
+    if(!left && !right) player.vx *= world.friction;
+    player.vx = Math.max(-maxSpeed, Math.min(maxSpeed, player.vx));
+
+    if(jump) player.jumpBuffer = 9;
+    else player.jumpBuffer = Math.max(0, player.jumpBuffer - 1);
+
+    if(player.onGround) player.coyote = 8;
+    else player.coyote = Math.max(0, player.coyote - 1);
+
+    if(player.jumpBuffer > 0 && player.coyote > 0){
+      player.vy = -14;
+      player.onGround = false;
+      player.coyote = 0;
+      player.jumpBuffer = 0;
+      setMessage("[OK] jump vector accepted");
+    }
+
+    player.vy += world.gravity;
+    player.x += player.vx;
+    player.y += player.vy;
+    player.onGround = false;
+    keepPlayerInBounds();
+
+    // fallback floor
+    if(player.y + player.h > world.floor){
+      player.y = world.floor - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+
+    // chunks
+    for(const chunk of chunks){
+      if(!chunk.base) chunk.y += chunk.speed * world.speedScale;
+
+      if(chunk.y > canvas.height + 220){
+        Object.assign(chunk, generateChunk());
+      }
+
+      const prevBottom = player.y + player.h - player.vy;
+      const playerBottom = player.y + player.h;
+
+      if(player.vy >= 0 &&
+         player.x < chunk.x + chunk.w &&
+         player.x + player.w > chunk.x &&
+         prevBottom <= chunk.y + 8 &&
+         playerBottom >= chunk.y &&
+         player.y < chunk.y){
+        player.y = chunk.y - player.h;
+        player.vy = 0;
+        player.onGround = true;
+        if(!chunk.stable && Math.random() > 0.985){
+          setMessage("[WARN] unstable platform checksum drift");
+        }
+      }
+    }
+
+    // hazards
+    for(const h of hazards){
+      h.y += h.speed * world.speedScale;
+      if(h.y > canvas.height + 120) Object.assign(h, generateHazard());
+
+      if(player.invuln <= 0 && rectsOverlap(player, h)){
+        damage();
+        Object.assign(h, generateHazard());
+      }
+    }
+
+    // pickups
+    for(const p of pickups){
+      p.y += p.speed * world.speedScale;
+      if(p.y > canvas.height + 120 || p.taken) Object.assign(p, generatePickup());
+
+      if(circleRectOverlap(p, player)){
+        p.taken = true;
+        state.modules++;
+        state.score += 75;
+        setMessage("[OK] system module collected: " + p.text);
+      }
+    }
+
+    // fall death
+    if(player.y > canvas.height + 160){
+      damage(true);
+    }
+
+    ui.score.textContent = Math.floor(state.score);
+    ui.lives.textContent = state.lives;
+    ui.modules.textContent = state.modules;
+    ui.signal.textContent = signalText();
+  }
+
+  function signalText(){
+    if(state.gameOver) return "TERMINATED";
+    if(state.lives === 1) return "CRITICAL";
+    if(state.score > 900) return "OVERDRIVE";
+    return "STABLE";
+  }
+
+  function damage(fall=false){
+    state.lives--;
+    state.shake = 14;
+    setMessage(fall ? "[ERROR] player fell below archive boundary" : "[ERROR] collision with corrupt code fragment");
+    if(state.lives <= 0){
+      state.gameOver = true;
+      setMessage("[SYSTEM HALT] Code Storm failed. Press R to reboot.");
+    } else {
+      resetPlayer();
+    }
+  }
+
+  function setMessage(msg){
+    state.message = msg;
+    ui.status.textContent = msg + " // score=" + Math.floor(state.score) + " // modules=" + state.modules;
+  }
+
+  function restart(){
+    state.running = true;
+    state.paused = false;
+    state.gameOver = false;
+    state.score = 0;
+    state.lives = 3;
+    state.modules = 0;
+    state.time = 0;
+    state.shake = 0;
+    world.speedScale = 1;
+    resetPlayer();
+    resetEntities();
+    setMessage("BuddhaOS arcade driver attached.");
+    ui.menu.classList.add("hidden");
+  }
+
+  function togglePause(){
+    if(!state.running || state.gameOver) return;
+    state.paused = !state.paused;
+    setMessage(state.paused ? "[PAUSED] matrix rain suspended" : "[OK] execution resumed");
+  }
+
+  // =========================
+  // DRAWING
+  // =========================
+  function draw(){
+    matrix.draw();
+
+    ctx.save();
+
+    if(state.shake > 0){
+      ctx.translate(rand(-state.shake,state.shake), rand(-state.shake,state.shake));
+      state.shake *= 0.86;
+      if(state.shake < 0.4) state.shake = 0;
+    }
+
+    drawChunks();
+    drawHazards();
+    drawPickups();
+    drawPlayer();
+    drawOverlayText();
+
+    ctx.restore();
+  }
+
+  function drawChunks(){
+    ctx.font = "18px Courier New, monospace";
+    for(const chunk of chunks){
+      ctx.save();
+      ctx.globalAlpha = chunk.stable ? 0.95 : 0.72;
+      ctx.fillStyle = chunk.stable ? "rgba(255,255,255,.95)" : "rgba(255,77,109,.9)";
+      ctx.strokeStyle = chunk.stable ? "rgba(0,255,102,.45)" : "rgba(255,77,109,.55)";
+      ctx.strokeRect(chunk.x, chunk.y-2, chunk.w, chunk.h+6);
+
+      let yOffset = chunk.y + 18;
+      for(const line of chunk.text){
+        ctx.fillText(line, chunk.x + 10, yOffset);
+        yOffset += 20;
+      }
+      ctx.restore();
+    }
+  }
+
+  function drawHazards(){
+    ctx.font = "18px Consolas, monospace";
+    for(const h of hazards){
+      ctx.fillStyle = "rgba(255,77,109,.15)";
+      ctx.fillRect(h.x-4,h.y-4,h.w+8,h.h+8);
+      ctx.fillStyle = "#ff4d6d";
+      ctx.fillText(h.text,h.x,h.y+18);
+    }
+  }
+
+  function drawPickups(){
+    ctx.font = "16px Consolas, monospace";
+    for(const p of pickups){
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r+4,0,Math.PI*2);
+      ctx.strokeStyle = "#f0c040";
+      ctx.stroke();
+      ctx.fillStyle = "#f0c040";
+      ctx.fillText(p.text,p.x-8,p.y+5);
+    }
+  }
+
+  function drawPlayer(){
+    const blink = player.invuln > 0 && Math.floor(performance.now()/90)%2 === 0;
+    if(blink) return;
+
+    ctx.fillStyle = "#00ff66";
+    ctx.shadowColor = "#00ff66";
+    ctx.shadowBlur = 18;
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#001b0b";
+    ctx.fillRect(player.x+7, player.y+9, 5, 5);
+    ctx.fillRect(player.x+19, player.y+9, 5, 5);
+  }
+
+  function drawOverlayText(){
+    if(state.paused){
+      centerText("PAUSED", "#f0c040", 64);
+    }
+    if(state.gameOver){
+      centerText("SYSTEM HALT", "#ff4d6d", 64);
+      ctx.fillStyle = "#eafff1";
+      ctx.font = "20px Consolas, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText("Press R to reboot Code Storm", canvas.width/2, canvas.height/2 + 48);
+      ctx.textAlign = "left";
+    }
+  }
+
+  function centerText(text,color,size){
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.font = size + "px Consolas, monospace";
+    ctx.textAlign = "center";
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 24;
+    ctx.fillText(text, canvas.width/2, canvas.height/2);
+    ctx.restore();
+  }
+
+  // =========================
+  // LOOP
+  // =========================
+  function loop(now){
+    const dt = Math.min(32, now - state.lastFrame);
+    state.lastFrame = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // =========================
+  // BOOT + INIT
+  // =========================
+  function boot(){
+    const lines = [
+      "[OK] BuddhaOS arcade kernel initialized",
+      "[OK] Loading Code Storm module...",
+      "[WARN] Matrix rainfall unstable",
+      "[OK] PROJECTMANHATTAN handshake complete",
+      "[OK] Q@W@RD protocol online",
+      "[OK] Collision lattice compiled",
+      "[READY] Press ENTER STORM"
+    ];
+
+    let i = 0;
+    const timer = setInterval(() => {
+      ui.bootLog.textContent += lines[i] + "\n";
+      ui.bar.style.width = Math.round(((i+1)/lines.length)*100) + "%";
+      i++;
+
+      if(i >= lines.length){
+        clearInterval(timer);
+        setTimeout(() => {
+          ui.boot.classList.add("hidden");
+          ui.menu.classList.remove("hidden");
+        }, 550);
+      }
+    }, 330);
+  }
+
+  ui.startBtn.addEventListener("click", restart);
+
+  resize();
+  resetPlayer();
+  resetEntities();
+  boot();
   requestAnimationFrame(loop);
-}
-
-loop();
+})();
 </script>
-
 </body>
 </html>
