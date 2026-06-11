@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Code Storm Platformer // Matrix Man</title>
+<title>Code Storm // BuddhaOS Matrix Man</title>
 <style>
 :root{
   --green:#00ff66;
@@ -11,198 +11,85 @@
   --white:#f4fff7;
   --gold:#f0c040;
   --red:#ff4d6d;
-  --black:#000;
+  --line:rgba(0,255,102,.38);
+  --shadow:0 0 22px rgba(0,255,102,.4),0 0 90px rgba(0,255,102,.16);
 }
 *{box-sizing:border-box}
 html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#000;
-  color:var(--green);
+  margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--green);
   font-family:Consolas,"Courier New",monospace;
 }
-canvas{
-  display:block;
-  width:100vw;
-  height:100vh;
-  background:#000;
-}
+canvas{display:block;width:100vw;height:100vh;background:#000}
 body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:10;
-  pointer-events:none;
-  background:repeating-linear-gradient(
-    0deg,
-    rgba(255,255,255,.035) 0,
-    rgba(255,255,255,.035) 1px,
-    transparent 1px,
-    transparent 4px
-  );
+  content:"";position:fixed;inset:0;z-index:10;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.033) 0,rgba(255,255,255,.033) 1px,transparent 1px,transparent 4px);
   mix-blend-mode:screen;
 }
 body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:11;
-  pointer-events:none;
+  content:"";position:fixed;inset:0;z-index:11;pointer-events:none;
   background:
     radial-gradient(circle at center,transparent 0 55%,rgba(0,0,0,.48) 100%),
     linear-gradient(90deg,rgba(255,0,0,.025),rgba(0,255,102,.018),rgba(0,0,255,.025));
   animation:flicker .18s infinite alternate;
 }
-@keyframes flicker{
-  from{opacity:.82}
-  to{opacity:1}
-}
+@keyframes flicker{from{opacity:.82}to{opacity:1}}
 .hud{
-  position:fixed;
-  z-index:20;
-  top:0;
-  left:0;
-  right:0;
-  display:flex;
-  justify-content:space-between;
-  gap:.75rem;
-  align-items:center;
-  padding:.65rem .8rem;
-  border-bottom:1px solid rgba(0,255,102,.4);
-  background:rgba(0,0,0,.62);
-  backdrop-filter:blur(6px);
-  text-shadow:0 0 12px var(--green);
-  font-size:clamp(.65rem,1.6vw,.85rem);
+  position:fixed;z-index:20;top:0;left:0;right:0;display:flex;justify-content:space-between;gap:.75rem;
+  align-items:center;padding:.65rem .8rem;border-bottom:1px solid var(--line);background:rgba(0,0,0,.64);
+  backdrop-filter:blur(6px);text-shadow:0 0 12px var(--green);font-size:clamp(.62rem,1.55vw,.84rem);
 }
-.hud strong{color:var(--white)}
-.hud .gold{color:var(--gold)}
-.hud .red{color:var(--red)}
-.hud button{
-  border:1px solid var(--green);
-  background:#000;
-  color:var(--green);
-  font:inherit;
-  padding:.35rem .55rem;
-  cursor:pointer;
+.hud strong{color:var(--white)} .gold{color:var(--gold)} .red{color:var(--red)}
+.hud button,.panel button{
+  border:1px solid var(--green);background:#000;color:var(--green);font:inherit;cursor:pointer;
 }
-.hud button.active{
-  color:#001b0b;
-  background:var(--green);
+.hud button{padding:.35rem .55rem}
+.hud button.active,.panel button:hover,.panel button:focus{
+  color:#001b0b;background:var(--green);outline:none;
 }
 .status{
-  position:fixed;
-  z-index:20;
-  left:.8rem;
-  bottom:.8rem;
-  max-width:min(720px,92vw);
-  padding:.65rem;
-  border:1px solid rgba(0,255,102,.35);
-  background:rgba(0,0,0,.66);
-  font-size:clamp(.65rem,1.8vw,.78rem);
-  line-height:1.45;
-  color:var(--green2);
+  position:fixed;z-index:20;left:.8rem;bottom:.8rem;max-width:min(780px,92vw);
+  padding:.65rem;border:1px solid var(--line);background:rgba(0,0,0,.68);
+  font-size:clamp(.62rem,1.8vw,.78rem);line-height:1.45;color:var(--green2);
 }
-.boot{
-  position:fixed;
-  inset:0;
-  z-index:40;
-  display:grid;
-  place-items:center;
-  background:#000;
-  color:var(--green);
+.overlay{
+  position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(0,0,0,.9);color:var(--green);
 }
-.boot.hidden{display:none}
-.boot-box{
-  width:min(780px,92vw);
-  border:1px solid var(--green);
-  box-shadow:0 0 22px rgba(0,255,102,.4),0 0 90px rgba(0,255,102,.16);
-  padding:1.25rem;
-  background:rgba(0,0,0,.86);
+.overlay.hidden{display:none}
+.box,.panel{
+  width:min(820px,92vw);border:1px solid var(--green);box-shadow:var(--shadow);
+  background:rgba(0,0,0,.86);padding:1.25rem;
 }
-.boot-title{
-  color:var(--white);
-  letter-spacing:.16em;
-  margin-bottom:1rem;
-}
-.boot-log{
-  min-height:220px;
-  white-space:pre-wrap;
-  line-height:1.55;
-}
-.progress{
-  height:8px;
-  border:1px solid rgba(0,255,102,.45);
-  overflow:hidden;
-  margin-top:1rem;
-}
-.progress span{
-  display:block;
-  width:0;
-  height:100%;
-  background:var(--green);
-  box-shadow:0 0 18px var(--green);
-}
-.start{
-  position:fixed;
-  inset:0;
-  z-index:35;
-  display:grid;
-  place-items:center;
-  background:rgba(0,0,0,.86);
-}
-.start.hidden{display:none}
-.panel{
-  width:min(760px,92vw);
-  border:1px solid var(--green);
-  box-shadow:0 0 22px rgba(0,255,102,.4),0 0 90px rgba(0,255,102,.16);
-  padding:1.25rem;
-  background:rgba(0,0,0,.86);
-}
+.boot-title{color:var(--white);letter-spacing:.16em;margin-bottom:1rem}
+.boot-log{min-height:220px;white-space:pre-wrap;line-height:1.55}
+.progress{height:8px;border:1px solid var(--line);overflow:hidden;margin-top:1rem}
+.progress span{display:block;width:0;height:100%;background:var(--green);box-shadow:0 0 18px var(--green)}
 .panel h1{
-  margin:0;
-  color:var(--green2);
-  font-size:clamp(2.5rem,8vw,5.5rem);
-  line-height:.88;
-  text-shadow:0 0 22px var(--green);
+  margin:0;color:var(--green2);font-size:clamp(2.5rem,8vw,5.5rem);line-height:.88;text-shadow:0 0 22px var(--green);
 }
-.panel p{
-  color:var(--white);
-  line-height:1.6;
+.panel p{color:var(--white);line-height:1.6}
+.panel button{padding:.8rem 1.1rem}
+kbd{border:1px solid var(--line);padding:.05rem .3rem;color:#fff}
+@media(max-width:760px){
+  .hud{flex-direction:column;align-items:flex-start}
 }
-.panel button{
-  border:1px solid var(--green);
-  background:#000;
-  color:var(--green);
-  font:inherit;
-  padding:.8rem 1.1rem;
-  cursor:pointer;
-}
-.panel button:hover,.panel button:focus{
-  color:#001b0b;
-  background:var(--green);
-  outline:none;
-}
-kbd{
-  border:1px solid rgba(0,255,102,.4);
-  padding:.05rem .3rem;
-  color:#fff;
+@media(prefers-reduced-motion:reduce){
+  body::after{animation:none}
 }
 </style>
 </head>
 <body>
-
 <canvas id="game"></canvas>
 
 <div class="hud">
-  <div><strong>CODE STORM</strong> // MATRIX MAN PLATFORMER</div>
+  <div><strong>CODE STORM</strong> // BUDDHAOS MATRIX MAN</div>
   <div>
     SCORE: <span id="score">0</span> |
     BEST: <span id="best">0</span> |
+    LIVES: <span id="lives">3</span> |
+    MODULES: <span id="modules">0</span> |
     FALLS: <span id="falls">0</span> |
     SIGNAL: <span id="signal" class="gold">BOOT</span>
-    <button id="matrixModeBtn" title="Toggle Matrix Mode">MATRIX MODE</button>
+    <button id="matrixBtn">MATRIX MODE</button>
   </div>
 </div>
 
@@ -210,20 +97,20 @@ kbd{
   Controls: <kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd> move · <kbd>W</kbd>/<kbd>SPACE</kbd> jump · <kbd>P</kbd> pause · <kbd>R</kbd> restart
 </div>
 
-<div class="boot" id="boot">
-  <div class="boot-box">
+<div class="overlay" id="boot">
+  <div class="box">
     <div class="boot-title">BUDDHAOS ARCADE BIOS // CODE STORM</div>
     <div class="boot-log" id="bootLog"></div>
     <div class="progress"><span id="bar"></span></div>
   </div>
 </div>
 
-<div class="start hidden" id="startScreen">
+<div class="overlay hidden" id="start">
   <div class="panel">
     <h1>Code Storm</h1>
     <p>
-      Play as <strong>Matrix Man</strong>, a tiny ASCII runner trying to survive inside a collapsing terminal.
-      Jump across falling white monospace platforms. Collect glowing system tokens. Avoid falling below the screen.
+      The best merged build: Matrix Man ASCII movement, text-block platforms, corrupt ERROR hazards,
+      collectible system modules, lives, falls, best score, screen shake, Matrix Mode, and BuddhaOS boot ritual.
     </p>
     <p>
       Controls: <kbd>A</kbd>/<kbd>D</kbd> move, <kbd>W</kbd>/<kbd>SPACE</kbd> jump,
@@ -237,520 +124,266 @@ kbd{
 (() => {
   "use strict";
 
-  // =========================
-  // SETUP
-  // =========================
   const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d", { alpha:false });
-
+  const ctx = canvas.getContext("2d",{alpha:false});
+  const $ = id => document.getElementById(id);
   const ui = {
-    boot: document.getElementById("boot"),
-    bootLog: document.getElementById("bootLog"),
-    bar: document.getElementById("bar"),
-    start: document.getElementById("startScreen"),
-    startBtn: document.getElementById("startBtn"),
-    score: document.getElementById("score"),
-    best: document.getElementById("best"),
-    falls: document.getElementById("falls"),
-    signal: document.getElementById("signal"),
-    status: document.getElementById("status"),
-    matrixModeBtn: document.getElementById("matrixModeBtn")
+    score:$("score"), best:$("best"), lives:$("lives"), modules:$("modules"), falls:$("falls"),
+    signal:$("signal"), status:$("status"), boot:$("boot"), bootLog:$("bootLog"), bar:$("bar"),
+    start:$("start"), startBtn:$("startBtn"), matrixBtn:$("matrixBtn")
   };
 
+  const saveKey = "codeStormBestMerged";
   const state = {
-    booted:false,
-    running:false,
-    paused:false,
-    score:0,
-    best:Number(localStorage.getItem("codeStormBest") || 0),
-    falls:0,
-    time:0,
-    last:performance.now(),
-    matrixMode:false,
-    shake:0,
-    message:"Awaiting storm entry."
+    running:false, paused:false, gameOver:false, matrixMode:false,
+    score:0, best:Number(localStorage.getItem(saveKey)||0), lives:3, modules:0, falls:0,
+    time:0, shake:0, last:performance.now(), message:"Awaiting storm entry."
   };
 
-  const world = {
-    gravity:.78,
-    friction:.82,
-    floor:0,
-    speedScale:1
-  };
+  const world = { gravity:.76, friction:.82, speedScale:1, floor:0 };
+  const keys = Object.create(null);
+  const player = { x:0,y:0,w:34,h:42,vx:0,vy:0,onGround:false,coyote:0,jumpBuffer:0,invuln:0,facing:1 };
+  const matrixMan = [" O ","/|\\","/ \\"];
 
-  // =========================
-  // MATRIX RAIN BACKGROUND
-  // =========================
+  const platforms = [];
+  const hazards = [];
+  const pickups = [];
+
+  const platformTexts = [
+    "████████████","CODEBLOCK","SYSTEM32","{BUDDHAOS}","[Q@W@RD]","<MATRIX>",
+    "PROJECTMANHATTAN","BOOT_SECTOR","ARCHIVE_NODE","$$$$$$$$$$","VOID.DEV","WHALE.AI"
+  ];
+  const codeLines = [
+    "function awaken(){","let signal = 432;","console.log('suchness')","if(user){access();}",
+    "while(true){break;}","try{}catch(e){}","return null;","class Matrix{}",
+    "QWARD.protocol.online();","PROJECTMANHATTAN.handshake();","BuddhaOS.kernel.tick();",
+    "archive.mount('/worlds');","whale.ai.listen();"
+  ];
+
+  const rand = (min,max) => min + Math.random()*(max-min);
+  const choice = arr => arr[(Math.random()*arr.length)|0];
+  const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
+
   const matrix = {
     chars:"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$@#%^&{}[]<>+-=*/;佛QWRDERROR",
-    fontSize:16,
-    cols:0,
-    drops:[],
+    fontSize:16, cols:0, drops:[],
     resize(){
-      this.cols = Math.ceil(canvas.width / this.fontSize);
-      this.drops = Array.from({length:this.cols}, () => Math.random() * canvas.height / this.fontSize);
+      this.cols = Math.ceil(canvas.width/this.fontSize);
+      this.drops = Array.from({length:this.cols},()=>Math.random()*canvas.height/this.fontSize);
     },
     draw(){
-      ctx.fillStyle = state.matrixMode ? "rgba(0,0,0,.055)" : "rgba(0,0,0,.11)";
+      ctx.fillStyle = state.matrixMode ? "rgba(0,0,0,.052)" : "rgba(0,0,0,.105)";
       ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      ctx.font = this.fontSize + "px Consolas, Courier New, monospace";
-      ctx.fillStyle = state.matrixMode ? "#7cff9b" : "#00ff66";
-
+      ctx.font = this.fontSize+"px Consolas,Courier New,monospace";
+      ctx.fillStyle = state.paused ? "#315f41" : state.matrixMode ? "#7cff9b" : "#00ff66";
       const passes = state.matrixMode ? 2 : 1;
       for(let pass=0; pass<passes; pass++){
         for(let i=0;i<this.cols;i++){
-          const ch = this.chars[(Math.random()*this.chars.length)|0];
-          ctx.fillText(ch, i*this.fontSize, this.drops[i]*this.fontSize);
-
-          if(this.drops[i]*this.fontSize > canvas.height && Math.random() > .975){
-            this.drops[i] = 0;
-          }
-          this.drops[i] += state.matrixMode ? 1.35 : 1;
+          ctx.fillText(choice(this.chars), i*this.fontSize, this.drops[i]*this.fontSize);
+          if(this.drops[i]*this.fontSize > canvas.height && Math.random()>.975) this.drops[i]=0;
+          this.drops[i] += state.matrixMode ? 1.3 : 1;
         }
       }
     }
   };
 
   function resize(){
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-    world.floor = canvas.height + 90;
-    matrix.resize();
-    keepPlayerInBounds();
+    canvas.width = innerWidth; canvas.height = innerHeight;
+    world.floor = canvas.height - 52;
+    matrix.resize(); keepPlayerInBounds();
   }
-  addEventListener("resize", resize);
-
-  // =========================
-  // INPUT
-  // =========================
-  const keys = Object.create(null);
-  addEventListener("keydown", e => {
-    const k = e.key.toLowerCase();
-    keys[k] = true;
-
-    if(k === "p") togglePause();
-    if(k === "r") restart();
-
-    if([" ","arrowup","arrowleft","arrowright"].includes(k)){
-      e.preventDefault();
-    }
-  });
-
-  addEventListener("keyup", e => {
-    keys[e.key.toLowerCase()] = false;
-  });
-
-  // =========================
-  // PLAYER: MATRIX MAN
-  // =========================
-  const player = {
-    x:0,y:0,w:34,h:42,
-    vx:0,vy:0,
-    onGround:false,
-    coyote:0,
-    jumpBuffer:0,
-    invuln:0,
-    facing:1
-  };
-
-  const matrixMan = [
-    " O ",
-    "/|\\",
-    "/ \\"
-  ];
 
   function resetPlayer(){
-    player.x = canvas.width * .5;
-    player.y = canvas.height - 180;
-    player.vx = 0;
-    player.vy = 0;
-    player.onGround = false;
-    player.coyote = 0;
-    player.jumpBuffer = 0;
-    player.invuln = 80;
+    player.x=canvas.width*.5; player.y=canvas.height-165; player.vx=0; player.vy=0;
+    player.onGround=false; player.coyote=0; player.jumpBuffer=0; player.invuln=90;
   }
+  function keepPlayerInBounds(){ player.x = clamp(player.x,0,canvas.width-player.w); }
 
-  function keepPlayerInBounds(){
-    player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
-  }
-
-  // =========================
-  // PLATFORMS / PICKUPS
-  // =========================
-  const platformTexts = [
-    "████████████",
-    "CODEBLOCK",
-    "SYSTEM32",
-    "{BUDDHAOS}",
-    "[Q@W@RD]",
-    "<MATRIX>",
-    "PROJECTMANHATTAN",
-    "BOOT_SECTOR",
-    "ARCHIVE_NODE",
-    "$$$$$$$$$$"
-  ];
-
-  const platforms = [];
-  const pickups = [];
-
-  function rand(min,max){ return min + Math.random() * (max-min); }
-  function choice(arr){ return arr[(Math.random()*arr.length)|0]; }
-
-  function platformWidth(text){
-    return Math.max(120, text.length * 15 + 28);
-  }
-
-  function makePlatform(y = -120){
+  function platformWidth(text){ return Math.max(150, text.length*15+36); }
+  function makeTextPlatform(y=-120){
     const text = choice(platformTexts);
     const w = platformWidth(text);
-    return {
-      text,
-      x:rand(20, Math.max(40, canvas.width - w - 20)),
-      y,
-      w,
-      h:26,
-      speed:rand(1.2,2.5),
-      stable:Math.random() > .12
-    };
+    return {kind:"text", text, lines:null, x:rand(20,Math.max(40,canvas.width-w-20)), y, w, h:28, speed:rand(1.1,2.5), stable:Math.random()>.12};
   }
-
-  function makePickup(y = -160){
-    return {
-      text:choice(["{}", "[]", "<>", "$@", "#%", "&&"]),
-      x:rand(30, canvas.width - 40),
-      y,
-      r:10,
-      speed:rand(1.4,2.7),
-      taken:false
-    };
+  function makeCodeChunk(y=-200){
+    const lines = Array.from({length:3+((Math.random()*5)|0)},()=> " ".repeat((Math.random()*8)|0)+choice(codeLines));
+    const w = Math.min(390,Math.max(230,rand(230,360)));
+    return {kind:"code", text:null, lines, x:rand(20,Math.max(40,canvas.width-w-20)), y, w, h:lines.length*20+12, speed:rand(1.1,2.55), stable:Math.random()>.16};
   }
+  function makePlatform(y=-120){ return Math.random()>.55 ? makeTextPlatform(y) : makeCodeChunk(y); }
+  function makeHazard(y=-300){ return {x:rand(20,canvas.width-75), y, w:64, h:24, speed:rand(2.2,4.4), text:"ERROR"}; }
+  function makePickup(y=-190){ return {x:rand(30,canvas.width-40), y, r:10, speed:rand(1.4,3.1), text:choice(["{}","[]","<>","$@","#%","&&"]), taken:false}; }
 
   function resetWorld(){
-    platforms.length = 0;
-    pickups.length = 0;
-
-    platforms.push({
-      text:"████ START ████",
-      x:Math.max(20, canvas.width/2 - 125),
-      y:canvas.height - 85,
-      w:250,
-      h:26,
-      speed:0,
-      stable:true,
-      start:true
-    });
-
-    const count = Math.max(12, Math.floor(canvas.height / 74));
-    for(let i=0;i<count;i++){
-      platforms.push(makePlatform(canvas.height - 170 - i*85));
-    }
-
-    for(let i=0;i<7;i++){
-      pickups.push(makePickup(-i*190 - 60));
-    }
+    platforms.length=0; hazards.length=0; pickups.length=0;
+    platforms.push({kind:"text",text:"████ START ████",lines:null,x:Math.max(20,canvas.width/2-130),y:canvas.height-92,w:260,h:28,speed:0,stable:true,start:true});
+    const pCount = Math.max(13,Math.floor(canvas.height/74));
+    for(let i=0;i<pCount;i++) platforms.push(makePlatform(canvas.height-175-i*86));
+    for(let i=0;i<6;i++) hazards.push(makeHazard(-i*220-90));
+    for(let i=0;i<7;i++) pickups.push(makePickup(-i*190-70));
   }
 
-  // =========================
-  // GAMEPLAY
-  // =========================
-  function update(dt){
-    if(!state.running || state.paused) return;
-
-    state.time += dt;
-    state.score += dt * .018;
-    world.speedScale = 1 + Math.min(1.8, state.score / 850);
-
-    if(player.invuln > 0) player.invuln -= dt;
-
-    const left = keys["a"] || keys["arrowleft"];
-    const right = keys["d"] || keys["arrowright"];
-    const jump = keys["w"] || keys[" "] || keys["arrowup"];
-
-    if(left){
-      player.vx -= .72;
-      player.facing = -1;
-    }
-    if(right){
-      player.vx += .72;
-      player.facing = 1;
-    }
-    if(!left && !right){
-      player.vx *= world.friction;
-    }
-
-    player.vx = Math.max(-6.5, Math.min(6.5, player.vx));
-
-    if(jump) player.jumpBuffer = 9;
-    else player.jumpBuffer = Math.max(0, player.jumpBuffer - 1);
-
-    if(player.onGround) player.coyote = 8;
-    else player.coyote = Math.max(0, player.coyote - 1);
-
-    if(player.jumpBuffer > 0 && player.coyote > 0){
-      player.vy = -14;
-      player.onGround = false;
-      player.coyote = 0;
-      player.jumpBuffer = 0;
-      setStatus("[OK] jump vector accepted");
-    }
-
-    player.vy += world.gravity;
-    player.x += player.vx;
-    player.y += player.vy;
-    player.onGround = false;
-    keepPlayerInBounds();
-
-    updatePlatforms(dt);
-    updatePickups(dt);
-
-    if(player.y > canvas.height + 110){
-      fallReset();
-    }
-
-    state.best = Math.max(state.best, Math.floor(state.score));
-    localStorage.setItem("codeStormBest", String(state.best));
-
-    ui.score.textContent = Math.floor(state.score);
-    ui.best.textContent = state.best;
-    ui.falls.textContent = state.falls;
-    ui.signal.textContent = state.paused ? "PAUSED" : state.matrixMode ? "MATRIX" : "STABLE";
+  function setStatus(msg){
+    state.message = msg;
+    ui.status.textContent = `${msg} // A/D move // W/SPACE jump // P pause // R restart`;
   }
-
-  function updatePlatforms(dt){
-    const speed = world.speedScale;
-
-    for(const p of platforms){
-      if(!p.start) p.y += p.speed * speed;
-
-      if(p.y > canvas.height + 80){
-        Object.assign(p, makePlatform(-rand(40,180)));
-      }
-
-      const prevBottom = player.y + player.h - player.vy;
-      const bottom = player.y + player.h;
-
-      if(player.vy >= 0 &&
-         player.x < p.x + p.w &&
-         player.x + player.w > p.x &&
-         prevBottom <= p.y + 10 &&
-         bottom >= p.y &&
-         player.y < p.y){
-        player.y = p.y - player.h;
-        player.vy = 0;
-        player.onGround = true;
-        if(!p.stable && Math.random() > .986){
-          state.shake = 4;
-          setStatus("[WARN] unstable text platform checksum drift");
-        }
-      }
-    }
-  }
-
-  function updatePickups(dt){
-    for(const p of pickups){
-      p.y += p.speed * world.speedScale;
-
-      if(p.y > canvas.height + 90 || p.taken){
-        Object.assign(p, makePickup(-rand(90,400)));
-      }
-
-      const cx = Math.max(player.x, Math.min(p.x, player.x + player.w));
-      const cy = Math.max(player.y, Math.min(p.y, player.y + player.h));
-      const dx = p.x - cx;
-      const dy = p.y - cy;
-
-      if(dx*dx + dy*dy < p.r*p.r){
-        p.taken = true;
-        state.score += 85;
-        setStatus("[OK] token collected: " + p.text);
-      }
-    }
-  }
-
-  function fallReset(){
-    state.falls++;
-    state.shake = 16;
-    state.score = Math.max(0, state.score - 120);
-    resetPlayer();
-    setStatus("[ERROR] Matrix Man fell below memory boundary. Respawning...");
-  }
-
   function restart(){
-    state.running = true;
-    state.paused = false;
-    state.score = 0;
-    state.falls = 0;
-    state.time = 0;
-    state.shake = 0;
-    resetPlayer();
-    resetWorld();
-    ui.start.classList.add("hidden");
-    setStatus("[OK] Code Storm runtime started.");
+    state.running=true; state.paused=false; state.gameOver=false;
+    state.score=0; state.lives=3; state.modules=0; state.falls=0; state.time=0; state.shake=0; world.speedScale=1;
+    resetPlayer(); resetWorld(); ui.start.classList.add("hidden"); setStatus("[OK] Code Storm runtime started.");
   }
-
   function togglePause(){
-    if(!state.running) return;
-    state.paused = !state.paused;
+    if(!state.running || state.gameOver) return;
+    state.paused=!state.paused;
     setStatus(state.paused ? "[PAUSED] execution suspended" : "[OK] execution resumed");
   }
-
-  function setStatus(text){
-    state.message = text;
-    ui.status.textContent = text + " // A/D move // W/SPACE jump // P pause // R restart";
+  function damage(fall=false){
+    if(player.invuln>0 && !fall) return;
+    state.lives--; state.shake=16; setStatus(fall ? "[ERROR] Matrix Man fell below memory boundary" : "[ERROR] corrupt ERROR fragment collision");
+    if(state.lives<=0){ state.gameOver=true; setStatus("[SYSTEM HALT] Code Storm failed. Press R to reboot."); }
+    else resetPlayer();
   }
 
-  // =========================
-  // DRAWING
-  // =========================
+  function rectsOverlap(a,b){return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;}
+  function circleRect(c,r){
+    const cx=clamp(c.x,r.x,r.x+r.w), cy=clamp(c.y,r.y,r.y+r.h), dx=c.x-cx, dy=c.y-cy;
+    return dx*dx+dy*dy<c.r*c.r;
+  }
+
+  function update(dt){
+    if(!state.running || state.paused || state.gameOver) return;
+    state.time += dt; state.score += dt*.017; world.speedScale = 1+Math.min(1.65,state.score/900);
+    if(player.invuln>0) player.invuln -= dt;
+
+    const left=keys.a||keys.arrowleft, right=keys.d||keys.arrowright, jump=keys.w||keys[" "]||keys.arrowup;
+    if(left){player.vx-=.73; player.facing=-1;} if(right){player.vx+=.73; player.facing=1;}
+    if(!left && !right) player.vx*=world.friction;
+    player.vx=clamp(player.vx,-6.6,6.6);
+    player.jumpBuffer = jump ? 9 : Math.max(0,player.jumpBuffer-1);
+    player.coyote = player.onGround ? 8 : Math.max(0,player.coyote-1);
+    if(player.jumpBuffer>0 && player.coyote>0){
+      player.vy=-14; player.onGround=false; player.coyote=0; player.jumpBuffer=0; setStatus("[OK] jump vector accepted");
+    }
+
+    player.vy += world.gravity; player.x += player.vx; player.y += player.vy; player.onGround=false; keepPlayerInBounds();
+
+    for(const p of platforms){
+      if(!p.start) p.y += p.speed*world.speedScale;
+      if(p.y > canvas.height+100) Object.assign(p, makePlatform(-rand(60,210)));
+      const prevBottom = player.y+player.h-player.vy, bottom = player.y+player.h;
+      if(player.vy>=0 && player.x<p.x+p.w && player.x+player.w>p.x && prevBottom<=p.y+10 && bottom>=p.y && player.y<p.y){
+        player.y=p.y-player.h; player.vy=0; player.onGround=true;
+        if(!p.stable && Math.random()>.985){state.shake=4; setStatus("[WARN] unstable platform checksum drift");}
+      }
+    }
+
+    for(const h of hazards){
+      h.y += h.speed*world.speedScale;
+      if(h.y > canvas.height+120) Object.assign(h, makeHazard(-rand(90,520)));
+      if(rectsOverlap(player,h)){ damage(); Object.assign(h, makeHazard(-rand(120,560))); }
+    }
+
+    for(const p of pickups){
+      p.y += p.speed*world.speedScale;
+      if(p.y>canvas.height+90 || p.taken) Object.assign(p, makePickup(-rand(100,520)));
+      if(circleRect(p,player)){ p.taken=true; state.modules++; state.score+=85; setStatus("[OK] system token collected: "+p.text); }
+    }
+
+    if(player.y > canvas.height+130){
+      state.falls++; state.score=Math.max(0,state.score-110); damage(true);
+    }
+
+    state.best=Math.max(state.best,Math.floor(state.score));
+    try{localStorage.setItem(saveKey,String(state.best));}catch{}
+    renderHUD();
+  }
+
+  function renderHUD(){
+    ui.score.textContent=Math.floor(state.score); ui.best.textContent=state.best; ui.lives.textContent=state.lives;
+    ui.modules.textContent=state.modules; ui.falls.textContent=state.falls;
+    ui.signal.textContent=state.gameOver?"TERMINATED":state.paused?"PAUSED":state.lives===1?"CRITICAL":state.matrixMode?"MATRIX":state.score>900?"OVERDRIVE":"STABLE";
+  }
+
   function draw(){
     matrix.draw();
-
     ctx.save();
-
-    if(state.shake > 0){
-      ctx.translate(rand(-state.shake,state.shake), rand(-state.shake,state.shake));
-      state.shake *= .86;
-      if(state.shake < .35) state.shake = 0;
-    }
-
-    drawPlatforms();
-    drawPickups();
-    drawPlayer();
-
-    if(state.paused){
-      centerText("PAUSED", "#f0c040", 64);
-    }
-
+    if(state.shake>0){ctx.translate(rand(-state.shake,state.shake),rand(-state.shake,state.shake)); state.shake*=.86; if(state.shake<.35)state.shake=0;}
+    drawPlatforms(); drawHazards(); drawPickups(); drawPlayer();
+    if(state.paused) centerText("PAUSED","#f0c040",64);
+    if(state.gameOver){centerText("SYSTEM HALT","#ff4d6d",62); ctx.fillStyle="#eafff1"; ctx.font="20px Consolas,monospace"; ctx.textAlign="center"; ctx.fillText("Press R to reboot Code Storm",canvas.width/2,canvas.height/2+48); ctx.textAlign="left";}
     ctx.restore();
   }
 
   function drawPlatforms(){
-    ctx.font = "18px Consolas, Courier New, monospace";
-    ctx.textBaseline = "top";
-
+    ctx.textBaseline="top";
     for(const p of platforms){
-      ctx.save();
-      ctx.globalAlpha = p.stable ? .96 : .72;
-      ctx.strokeStyle = p.stable ? "rgba(0,255,102,.42)" : "rgba(255,77,109,.62)";
-      ctx.fillStyle = p.stable ? "#ffffff" : "#ff4d6d";
-      ctx.shadowColor = p.stable ? "#ffffff" : "#ff4d6d";
-      ctx.shadowBlur = p.stable ? 8 : 14;
-      ctx.strokeRect(p.x-10, p.y-5, p.w, p.h+9);
-      ctx.fillText(p.text, p.x, p.y);
+      ctx.save(); ctx.globalAlpha=p.stable?.96:.72; ctx.strokeStyle=p.stable?"rgba(0,255,102,.42)":"rgba(255,77,109,.62)";
+      ctx.fillStyle=p.stable?"#fff":"#ff4d6d"; ctx.shadowColor=ctx.fillStyle; ctx.shadowBlur=p.stable?8:14;
+      ctx.strokeRect(p.x-10,p.y-5,p.w,p.h+9);
+      if(p.kind==="code"){
+        ctx.font="18px Courier New,monospace"; let y=p.y+2; for(const line of p.lines){ctx.fillText(line,p.x+10,y); y+=20;}
+      } else {
+        ctx.font="18px Consolas,Courier New,monospace"; ctx.fillText(p.text,p.x,p.y);
+      }
       ctx.restore();
     }
   }
-
+  function drawHazards(){
+    ctx.font="18px Consolas,monospace";
+    for(const h of hazards){
+      ctx.fillStyle="rgba(255,77,109,.15)"; ctx.fillRect(h.x-4,h.y-4,h.w+8,h.h+8);
+      ctx.fillStyle="#ff4d6d"; ctx.shadowColor="#ff4d6d"; ctx.shadowBlur=12; ctx.fillText(h.text,h.x,h.y+18); ctx.shadowBlur=0;
+    }
+  }
   function drawPickups(){
-    ctx.font = "16px Consolas, Courier New, monospace";
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "center";
-
+    ctx.font="16px Consolas,monospace"; ctx.textBaseline="middle"; ctx.textAlign="center";
     for(const p of pickups){
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r+5,0,Math.PI*2);
-      ctx.strokeStyle = "#f0c040";
-      ctx.shadowColor = "#f0c040";
-      ctx.shadowBlur = 18;
-      ctx.stroke();
-      ctx.fillStyle = "#f0c040";
-      ctx.fillText(p.text,p.x,p.y);
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r+5,0,Math.PI*2); ctx.strokeStyle="#f0c040"; ctx.shadowColor="#f0c040"; ctx.shadowBlur=18; ctx.stroke();
+      ctx.fillStyle="#f0c040"; ctx.fillText(p.text,p.x,p.y);
     }
-
-    ctx.textAlign = "left";
+    ctx.textAlign="left"; ctx.shadowBlur=0;
   }
-
   function drawPlayer(){
-    if(player.invuln > 0 && Math.floor(performance.now()/80)%2 === 0) return;
-
-    ctx.save();
-    ctx.font = "16px Consolas, Courier New, monospace";
-    ctx.textBaseline = "top";
-    ctx.fillStyle = "#00ff66";
-    ctx.shadowColor = "#00ff66";
-    ctx.shadowBlur = 18;
-
-    const lines = matrixMan;
-    const x = player.x;
-    const y = player.y;
-    for(let i=0;i<lines.length;i++){
-      ctx.fillText(lines[i], x, y + i*14);
-    }
-
-    ctx.strokeStyle = "rgba(0,255,102,.38)";
-    ctx.strokeRect(player.x-4, player.y-3, player.w, player.h);
-    ctx.restore();
+    if(player.invuln>0 && Math.floor(performance.now()/80)%2===0) return;
+    ctx.save(); ctx.font="16px Consolas,Courier New,monospace"; ctx.textBaseline="top"; ctx.fillStyle="#00ff66"; ctx.shadowColor="#00ff66"; ctx.shadowBlur=18;
+    matrixMan.forEach((line,i)=>ctx.fillText(line,player.x,player.y+i*14));
+    ctx.strokeStyle="rgba(0,255,102,.38)"; ctx.strokeRect(player.x-4,player.y-3,player.w,player.h); ctx.restore();
   }
-
   function centerText(text,color,size){
-    ctx.save();
-    ctx.fillStyle = color;
-    ctx.font = size + "px Consolas, Courier New, monospace";
-    ctx.textAlign = "center";
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 24;
-    ctx.fillText(text, canvas.width/2, canvas.height/2);
-    ctx.restore();
+    ctx.save(); ctx.fillStyle=color; ctx.font=size+"px Consolas,Courier New,monospace"; ctx.textAlign="center"; ctx.shadowColor=color; ctx.shadowBlur=24; ctx.fillText(text,canvas.width/2,canvas.height/2); ctx.restore();
   }
 
-  // =========================
-  // LOOP
-  // =========================
   function loop(now){
-    const dt = Math.min(32, now - state.last);
-    state.last = now;
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
+    const dt=Math.min(32,now-state.last); state.last=now; update(dt); draw(); requestAnimationFrame(loop);
   }
 
-  // =========================
-  // BOOT SEQUENCE
-  // =========================
   function boot(){
-    const lines = [
-      "[OK] BuddhaOS arcade kernel initialized",
-      "[OK] Loading Matrix Man sprite...",
-      "[OK] Compiling white text platforms...",
-      "[WARN] Matrix rainfall density unstable",
-      "[OK] Collision grid online",
-      "[OK] PROJECTMANHATTAN handshake complete",
-      "[READY] Press ENTER STORM"
+    const lines=[
+      "[OK] BuddhaOS arcade kernel initialized","[OK] Loading Matrix Man sprite...","[OK] Compiling text/code platforms...",
+      "[WARN] Matrix rainfall density unstable","[OK] ERROR hazard lattice compiled","[OK] PROJECTMANHATTAN handshake complete",
+      "[OK] Q@W@RD protocol online","[READY] Press ENTER STORM"
     ];
-
-    let i = 0;
-    const timer = setInterval(() => {
-      ui.bootLog.textContent += lines[i] + "\n";
-      ui.bar.style.width = Math.round(((i+1)/lines.length)*100) + "%";
-      i++;
-
-      if(i >= lines.length){
-        clearInterval(timer);
-        setTimeout(() => {
-          ui.boot.classList.add("hidden");
-          ui.start.classList.remove("hidden");
-        }, 550);
-      }
-    }, 330);
+    let i=0;
+    const timer=setInterval(()=>{
+      ui.bootLog.textContent+=lines[i]+"\n"; ui.bar.style.width=Math.round(((i+1)/lines.length)*100)+"%";
+      if(++i>=lines.length){clearInterval(timer); setTimeout(()=>{ui.boot.classList.add("hidden"); ui.start.classList.remove("hidden");},550);}
+    },300);
   }
 
-  // =========================
-  // UI EVENTS
-  // =========================
-  ui.startBtn.addEventListener("click", restart);
-  ui.matrixModeBtn.addEventListener("click", () => {
-    state.matrixMode = !state.matrixMode;
-    ui.matrixModeBtn.classList.toggle("active", state.matrixMode);
-    setStatus(state.matrixMode ? "[OK] MATRIX MODE ENABLED: rain density increased" : "[OK] MATRIX MODE DISABLED");
+  addEventListener("resize",resize);
+  addEventListener("keydown",e=>{
+    const k=e.key.toLowerCase(); keys[k]=true;
+    if(k==="p") togglePause(); if(k==="r") restart();
+    if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k)) e.preventDefault();
+  });
+  addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
+  ui.startBtn.addEventListener("click",restart);
+  ui.matrixBtn.addEventListener("click",()=>{
+    state.matrixMode=!state.matrixMode; ui.matrixBtn.classList.toggle("active",state.matrixMode);
+    setStatus(state.matrixMode?"[OK] MATRIX MODE ENABLED: rain density increased":"[OK] MATRIX MODE DISABLED");
   });
 
-  resize();
-  resetPlayer();
-  resetWorld();
-  ui.best.textContent = state.best;
-  boot();
-  requestAnimationFrame(loop);
+  resize(); resetPlayer(); resetWorld(); renderHUD(); boot(); requestAnimationFrame(loop);
 })();
 </script>
 </body>
